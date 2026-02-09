@@ -5,6 +5,9 @@ A hyper-fast, keyboard-centric, and AI-ready task management dashboard with a "C
 ![Aesthetic](https://img.shields.io/badge/Aesthetic-Cyberpunk-emerald)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 ![AI](https://img.shields.io/badge/AI-Enabled-purple)
+![Written By](https://img.shields.io/badge/Written%20By-100%25%20AI%20Agent-orange)
+
+> **Note:** This entire system was 100% written and architected by an AI Agent.
 
 ## 🚀 Key Features
 
