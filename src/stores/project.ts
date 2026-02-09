@@ -8,7 +8,7 @@ export interface Project {
     icon?: string
 }
 
-const API_BASE = 'http://localhost:3000/api'
+const API_BASE = '/api'
 
 export const useProjectStore = defineStore('project', () => {
     const projects = ref<Project[]>([])

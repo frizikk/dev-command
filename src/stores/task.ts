@@ -11,7 +11,7 @@ export interface Task {
     isEditing?: boolean
 }
 
-const API_BASE = 'http://localhost:3000/api'
+const API_BASE = '/api'
 
 export const useTaskStore = defineStore('task', () => {
     const tasks = ref<Task[]>([])
