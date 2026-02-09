@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
+import { ref } from 'vue'
 
 export interface Task {
     id: string
@@ -11,30 +11,76 @@ export interface Task {
     isEditing?: boolean
 }
 
-export const useTaskStore = defineStore('task', () => {
-    const tasks = useLocalStorage<Task[]>('tasks', [])
+const API_BASE = 'http://localhost:3000/api'
 
-    function addTask(task: Task) {
-        tasks.value.push(task)
+export const useTaskStore = defineStore('task', () => {
+    const tasks = ref<Task[]>([])
+
+    async function fetchTasks() {
+        try {
+            const response = await fetch(`${API_BASE}/tasks`)
+            tasks.value = await response.json()
+        } catch (error) {
+            console.error('Failed to fetch tasks:', error)
+        }
     }
 
-    function toggleTask(id: string) {
+    async function addTask(task: Task) {
+        tasks.value.push(task)
+        try {
+            await fetch(`${API_BASE}/tasks`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(task)
+            })
+        } catch (error) {
+            console.error('Failed to add task:', error)
+        }
+    }
+
+    async function toggleTask(id: string) {
         const task = tasks.value.find(t => t.id === id)
         if (task) {
             task.completed = !task.completed
+            try {
+                await fetch(`${API_BASE}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: task.completed })
+                })
+            } catch (error) {
+                console.error('Failed to toggle task:', error)
+            }
         }
     }
 
-    function deleteTask(id: string) {
+    async function deleteTask(id: string) {
         tasks.value = tasks.value.filter(t => t.id !== id)
+        try {
+            await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' })
+        } catch (error) {
+            console.error('Failed to delete task:', error)
+        }
     }
 
-    function updateTask(id: string, updates: Partial<Task>) {
+    async function updateTask(id: string, updates: Partial<Task>) {
         const task = tasks.value.find(t => t.id === id)
         if (task) {
             Object.assign(task, updates)
+            try {
+                await fetch(`${API_BASE}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                })
+            } catch (error) {
+                console.error('Failed to update task:', error)
+            }
         }
     }
 
-    return { tasks, addTask, toggleTask, deleteTask, updateTask }
+    // Initial fetch
+    fetchTasks()
+
+    return { tasks, addTask, toggleTask, deleteTask, updateTask, fetchTasks }
 })

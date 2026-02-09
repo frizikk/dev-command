@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
+import { ref } from 'vue'
 
 export interface Project {
     id: string
@@ -8,26 +8,52 @@ export interface Project {
     icon?: string
 }
 
-export const useProjectStore = defineStore('project', () => {
-    const projects = useLocalStorage<Project[]>('projects', [
-        { id: '1', name: 'Work', color: 'blue' },
-        { id: '2', name: 'Home', color: 'green' }
-    ])
+const API_BASE = 'http://localhost:3000/api'
 
-    function addProject(project: Project) {
-        projects.value.push(project)
+export const useProjectStore = defineStore('project', () => {
+    const projects = ref<Project[]>([])
+
+    async function fetchProjects() {
+        try {
+            const response = await fetch(`${API_BASE}/projects`)
+            projects.value = await response.json()
+        } catch (error) {
+            console.error('Failed to fetch projects:', error)
+        }
     }
 
-    function deleteProject(id: string) {
+    async function addProject(project: Project) {
+        projects.value.push(project)
+        try {
+            await fetch(`${API_BASE}/projects`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(project)
+            })
+        } catch (error) {
+            console.error('Failed to add project:', error)
+        }
+    }
+
+    async function deleteProject(id: string) {
         projects.value = projects.value.filter(p => p.id !== id)
+        try {
+            await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' })
+        } catch (error) {
+            console.error('Failed to delete project:', error)
+        }
     }
 
     function updateProject(id: string, updates: Partial<Project>) {
         const project = projects.value.find(p => p.id === id)
         if (project) {
             Object.assign(project, updates)
+            // Implementation for PUT project API could be added here
         }
     }
 
-    return { projects, addProject, deleteProject, updateProject }
+    // Initial fetch
+    fetchProjects()
+
+    return { projects, addProject, deleteProject, updateProject, fetchProjects }
 })

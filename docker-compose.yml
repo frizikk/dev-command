@@ -1,10 +1,25 @@
 version: '3.8'
 
 services:
-  app:
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+    depends_on:
+      - backend
     restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    restart: always
+
+volumes:
+  db-data:
