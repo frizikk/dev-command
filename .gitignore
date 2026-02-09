@@ -25,3 +25,7 @@ dist-ssr
 
 # Docker
 .docker
+
+# Database
+data/*.sqlite
+data/*.sqlite-journal
