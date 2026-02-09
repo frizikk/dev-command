@@ -17,8 +17,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - DB_PATH=/data/database.sqlite
     volumes:
-      - ./data:/app/data
+      - db-data:/data
     restart: always
 
 volumes:
