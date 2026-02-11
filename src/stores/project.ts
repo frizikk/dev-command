@@ -52,8 +52,5 @@ export const useProjectStore = defineStore('project', () => {
         }
     }
 
-    // Initial fetch
-    fetchProjects()
-
     return { projects, addProject, deleteProject, updateProject, fetchProjects }
 })

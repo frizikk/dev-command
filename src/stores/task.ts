@@ -79,8 +79,5 @@ export const useTaskStore = defineStore('task', () => {
         }
     }
 
-    // Initial fetch
-    fetchTasks()
-
     return { tasks, addTask, toggleTask, deleteTask, updateTask, fetchTasks }
 })

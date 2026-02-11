@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useProjectStore } from '../stores/project'
 import { useTaskStore } from '../stores/task'
 import { useCommandParser } from '../utils/commandParser'
@@ -204,6 +204,11 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const activeProject = ref<string | undefined>(undefined)
 const selectedTaskIndex = ref(0)
 const isPaletteOpen = ref(false)
+
+onMounted(() => {
+    projectStore.fetchProjects()
+    taskStore.fetchTasks()
+})
 
 /* Palette handles its own open/close shortcut now */
 
