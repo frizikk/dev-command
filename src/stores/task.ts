@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useUserStore } from './user'
 
 export interface Task {
     id: string
@@ -42,6 +43,17 @@ export const useTaskStore = defineStore('task', () => {
         const task = tasks.value.find(t => t.id === id)
         if (task) {
             task.completed = !task.completed
+
+            if (task.completed) {
+                const userStore = useUserStore()
+                let xpAward = 10
+                if (task.priority === 'high') xpAward = 50
+                if (task.priority === 'medium') xpAward = 25
+
+                userStore.addXP(xpAward)
+                userStore.updateStreak()
+            }
+
             try {
                 await fetch(`${API_BASE}/tasks/${id}`, {
                     method: 'PUT',
@@ -79,5 +91,19 @@ export const useTaskStore = defineStore('task', () => {
         }
     }
 
-    return { tasks, addTask, toggleTask, deleteTask, updateTask, fetchTasks }
+    async function breakdownTask(id: string) {
+        try {
+            const res = await fetch(`${API_BASE}/tasks/${id}/breakdown`, { method: 'POST' })
+            if (res.ok) {
+                const subtasks = await res.json()
+                for (const st of subtasks) {
+                    await addTask(st)
+                }
+            }
+        } catch (err) {
+            console.error('Failed to breakdown task:', err)
+        }
+    }
+
+    return { tasks, addTask, toggleTask, deleteTask, updateTask, fetchTasks, breakdownTask }
 })

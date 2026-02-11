@@ -49,4 +49,26 @@ describe('useCommandParser', () => {
             raw: '/home'
         })
     })
+
+    it('handles empty input gracefully', () => {
+        const result = useCommandParser('   ')
+        expect(result.title).toBe('')
+    })
+
+    it('handles multiple project tags by taking the first one but cleaning all', () => {
+        const result = useCommandParser('Task #work #personal')
+        expect(result.projectId).toBe('work')
+        expect(result.title).toBe('Task')
+    })
+
+    it('handles invalid priority tags as part of the title', () => {
+        const result = useCommandParser('Task !urgent')
+        expect(result.priority).toBeUndefined()
+        expect(result.title).toBe('Task !urgent')
+    })
+
+    it('is case insensitive for priority', () => {
+        const result = useCommandParser('Task !HIGH')
+        expect(result.priority).toBe('high')
+    })
 })

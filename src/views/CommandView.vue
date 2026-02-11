@@ -2,6 +2,10 @@
   <div class="command-view min-h-screen font-mono flex relative overflow-hidden text-sm">
     <div class="scanlines fixed inset-0 pointer-events-none z-50"></div>
     <CommandPalette v-model="isPaletteOpen" />
+    <FocusMode :is-open="isFocusModeOpen" :task="focusedTask" @close="isFocusModeOpen = false" />
+    <FrogPrompt :is-open="isFrogPromptOpen" @close="isFrogPromptOpen = false" />
+
+
     
     <!-- Sidebar -->
     <aside class="w-72 border-r border-zinc-800/50 bg-zinc-950/90 flex flex-col z-10 backdrop-blur-md">
@@ -54,7 +58,31 @@
                 </li>
             </ul>
         </div>
+
+        <!-- Level System -->
+        <LevelSystem />
+
+        <!-- Extra Tools -->
+        <div class="px-4">
+            <h2 class="text-xs font-bold uppercase text-zinc-500 tracking-widest mb-4 pl-2 border-l-2 border-zinc-700">Protocols</h2>
+            <button 
+                @click="isOneThingMode = !isOneThingMode"
+                class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold uppercase tracking-wide rounded border transition-all"
+                :class="isOneThingMode ? 'bg-orange-500/10 border-orange-500/50 text-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'text-zinc-500 border-zinc-800 hover:border-zinc-700'"
+            >
+                <Target :size="14" />
+                {{ isOneThingMode ? 'The One Thing Active' : 'Enable One Thing' }}
+            </button>
+            <button 
+                @click="pickRandomTask"
+                class="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold uppercase tracking-wide rounded border border-zinc-800 text-zinc-500 hover:border-emerald-500/50 hover:text-emerald-400 transition-all mt-2"
+            >
+                <Zap :size="14" />
+                Random Easy Win
+            </button>
+        </div>
       </div>
+
       
       <!-- System Footer -->
       <div class="p-4 border-t border-zinc-900 bg-zinc-950/50">
@@ -118,6 +146,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="opacity-50"><line x1="22" y1="12" x2="2" y2="12"></line><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="6" y1="16" x2="6.01" y2="16"></line><line x1="10" y1="16" x2="10.01" y2="16"></line></svg>
                 </div>
                 <div class="text-xs uppercase tracking-widest opacity-50">Empty Buffer</div>
+                <p class="text-[10px] text-zinc-800 italic max-w-xs text-center mt-2">
+                    "{{ currentQuote }}"
+                </p>
             </div>
 
             <div v-else class="space-y-1">
@@ -129,7 +160,8 @@
                 <div v-for="(task, index) in filteredTasks" :key="task.id" 
                         class="group flex items-center p-0.5 rounded transition-all cursor-pointer relative"
                         :class="{ 'z-10 bg-zinc-800/80 scale-[1.01] shadow-lg': index === selectedTaskIndex }"
-                        @click="taskStore.toggleTask(task.id)">
+                        @click="handleToggleTask(task)">
+
                         
                     <!-- Selection Indicator (Left Border) -->
                     <div class="w-1 self-stretch mr-3 rounded-l transition-colors"
@@ -138,7 +170,15 @@
                             task.completed ? 'bg-zinc-800' : ''
                         ]"></div>
 
-                    <div class="flex-1 flex items-center gap-4 bg-zinc-900/40 border border-zinc-800/50 p-3 rounded hover:bg-zinc-900 hover:border-zinc-700 transition-all">
+                    <div class="flex-1 flex items-center gap-4 bg-zinc-900/40 border border-zinc-800/50 p-3 rounded hover:bg-zinc-900 hover:border-zinc-700 transition-all relative group/item">
+                         <!-- Focus Button (Overlay) -->
+                        <button 
+                            @click.stop="openFocusMode(task)"
+                            class="absolute right-12 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 bg-emerald-500 text-black text-[10px] font-black px-2 py-1 rounded flex items-center gap-1 transition-all hover:scale-105 z-20"
+                        >
+                            <Zap :size="10" /> FOCUS
+                        </button>
+
                         <!-- Checkbox Logic -->
                          <div class="w-5 h-5 flex items-center justify-center border transition-colors rounded-sm"
                            :class="task.completed ? 'bg-emerald-900/20 border-emerald-500/50 text-emerald-500' : 'border-zinc-700 bg-zinc-950 text-transparent'">
@@ -155,8 +195,16 @@
                                     autofocus
                                 />
                                 <div v-else class="flex-1 flex items-center gap-3 overflow-hidden">
+                                     <span v-if="userStore.frogTaskId === task.id && !task.completed" 
+                                           class="text-orange-500 animate-pulse drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" 
+                                           title="Your Daily Frog">
+                                         🐸
+                                     </span>
                                      <span 
-                                        :class="{ 'line-through text-zinc-600': task.completed, 'text-zinc-200 glow-text-sm': !task.completed }"
+                                        :class="[
+                                            task.completed ? 'line-through text-zinc-600' : 'text-zinc-200 glow-text-sm',
+                                            userStore.frogTaskId === task.id && !task.completed ? 'text-orange-400 font-black' : ''
+                                        ]"
                                         class="truncate font-medium tracking-wide"
                                         @dblclick="startEditing(task)">
                                     {{ task.title }}
@@ -195,6 +243,14 @@ import { useCommandParser } from '../utils/commandParser'
 import { onKeyStroke } from '@vueuse/core'
 import type { Task } from '../stores/task'
 import CommandPalette from '../components/CommandPalette.vue'
+import FocusMode from '../components/FocusMode.vue'
+import LevelSystem from '../components/LevelSystem.vue'
+import FrogPrompt from '../components/FrogPrompt.vue'
+import { Target, Zap } from 'lucide-vue-next'
+import confetti from 'canvas-confetti'
+import { useUserStore } from '../stores/user'
+
+
 
 const projectStore = useProjectStore()
 const taskStore = useTaskStore()
@@ -204,11 +260,42 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const activeProject = ref<string | undefined>(undefined)
 const selectedTaskIndex = ref(0)
 const isPaletteOpen = ref(false)
+const isFocusModeOpen = ref(false)
+const focusedTask = ref<Task | null>(null)
+const isOneThingMode = ref(false)
+const isFrogPromptOpen = ref(false)
+const userStore = useUserStore()
+
+const quotes = [
+    "The secret of getting ahead is getting started.",
+    "Do the hard jobs first. The easy jobs will take care of themselves.",
+    "Your future self is watching you right now through memories.",
+    "Action is the antidote to anxiety.",
+    "Everything you want is on the other side of fear (and boredom).",
+    "Don't wait for inspiration. Use the 5-minute rule.",
+    "Focus is the art of saying 'no' to 1000 other good ideas."
+]
+
+const currentQuote = computed(() => {
+    // Rotation based on the hour to keep it stable but fresh
+    const hour = new Date().getHours()
+    return quotes[hour % quotes.length]
+})
+
+
 
 onMounted(() => {
     projectStore.fetchProjects()
     taskStore.fetchTasks()
+    
+    // Check if we need to Eat The Frog
+    setTimeout(() => {
+        if (userStore.isFrogPending()) {
+            isFrogPromptOpen.value = true
+        }
+    }, 1500)
 })
+
 
 /* Palette handles its own open/close shortcut now */
 
@@ -234,9 +321,40 @@ onKeyStroke('Enter', () => {
     if (document.activeElement === inputRef.value) return
     const task = filteredTasks.value[selectedTaskIndex.value]
     if (task) {
-        taskStore.toggleTask(task.id)
+        handleToggleTask(task)
     }
 })
+
+function handleToggleTask(task: Task) {
+    const wasCompleted = task.completed
+    taskStore.toggleTask(task.id)
+    
+    // Confetti on completion (with 70% chance for variable reward effect)
+    if (!wasCompleted && Math.random() > 0.3) {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#10b981', '#34d399', '#059669']
+        })
+    }
+}
+
+function openFocusMode(task: Task) {
+    focusedTask.value = task
+    isFocusModeOpen.value = true
+}
+
+function pickRandomTask() {
+    const incompleteTasks = taskStore.tasks.filter(t => !t.completed)
+    if (incompleteTasks.length > 0) {
+        const randomTask = incompleteTasks[Math.floor(Math.random() * incompleteTasks.length)]
+        if (randomTask) {
+            openFocusMode(randomTask)
+        }
+    }
+}
+
 
 const activeProjectName = computed(() => {
     if (!activeProject.value) return undefined
@@ -249,11 +367,23 @@ const filteredTasks = computed(() => {
         tasks = tasks.filter((t: Task) => t.projectId === activeProject.value)
     }
     // Sort by completion (pending first) then priority
-    return tasks.sort((a: Task, b: Task) => {
+    const sorted = tasks.sort((a: Task, b: Task) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1
+        if (a.priority !== b.priority) {
+            const weights = { high: 0, medium: 1, low: 2, undefined: 3 }
+            return (weights[a.priority as keyof typeof weights] ?? 3) - (weights[b.priority as keyof typeof weights] ?? 3)
+        }
         return 0
     })
+
+    if (isOneThingMode.value) {
+        const topTask = sorted.find(t => !t.completed)
+        return topTask ? [topTask] : []
+    }
+
+    return sorted
 })
+
 
 function handleCommand() {
     if (!commandInput.value) return

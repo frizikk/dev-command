@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - backend
     restart: always
@@ -15,8 +15,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    # Ports removed to force access via todo.localhost/api
     environment:
       - DB_PATH=/data/database.sqlite
     volumes:

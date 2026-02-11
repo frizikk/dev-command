@@ -54,8 +54,8 @@ export function createApp(db: Database) {
             },
             servers: [
                 {
-                    url: 'http://localhost:3000',
-                    description: 'Development server',
+                    url: 'http://todo.localhost',
+                    description: 'Production proxy',
                 },
             ],
         },
@@ -226,6 +226,45 @@ export function createApp(db: Database) {
     app.delete('/api/tasks/:id', async (req, res) => {
         await db.run('DELETE FROM tasks WHERE id = ?', [req.params.id]);
         res.status(204).send();
+    });
+
+    /**
+     * @openapi
+     * /api/tasks/{id}/breakdown:
+     *   post:
+     *     summary: Break down a task into micro-steps using AI (Simulated)
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema: { type: string }
+     *     responses:
+     *       200:
+     *         description: List of sub-tasks.
+     */
+    app.post('/api/tasks/:id/breakdown', async (req, res) => {
+        const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+        if (!task) return res.status(404).json({ error: 'Task not found' });
+
+        // Logic to simulate AI breakdown based on title
+        const titleLower = task.title.toLowerCase();
+        let steps = ['Prepare workspace', 'Review documentation', 'Implement core logic', 'Verification and testing'];
+
+        if (titleLower.includes('test')) steps = ['Identify test cases', 'Setup test environment', 'Write unit tests', 'Run tests and fix errors'];
+        if (titleLower.includes('fix')) steps = ['Reproduce the bug', 'Locate the error in code', 'Apply fix', 'Verify fix'];
+        if (titleLower.includes('refactor')) steps = ['Identify code smells', 'Plan new structure', 'Incremental refactoring', 'Full regression test'];
+        if (titleLower.includes('docker')) steps = ['Create/Update Dockerfile', 'Configure docker-compose', 'Build images', 'Run and verify containers'];
+
+        const subtasks = steps.map(s => ({
+            id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            title: s,
+            completed: false,
+            projectId: task.projectId,
+            priority: 'low',
+            createdAt: Date.now()
+        }));
+
+        res.json(subtasks);
     });
 
     return app;

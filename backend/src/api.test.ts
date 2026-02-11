@@ -84,4 +84,20 @@ describe('DevCommand API', () => {
         const check = await request(app).get('/api/tasks');
         expect(check.body.length).toBe(0);
     });
+
+    it('should return 404 when updating non-existent task', async () => {
+        const res = await request(app)
+            .put('/api/tasks/non-existent')
+            .send({ title: 'Fail' });
+        expect(res.status).toBe(404);
+        expect(res.body.error).toBe('Task not found');
+    });
+
+    it('should handle malformed JSON gracefully', async () => {
+        const res = await request(app)
+            .post('/api/tasks')
+            .set('Content-Type', 'application/json')
+            .send('{"invalid": json'); // Manually send malformed string
+        expect(res.status).toBe(400);
+    });
 });

@@ -65,4 +65,15 @@ describe('Task Store', () => {
             method: 'DELETE'
         }))
     })
+
+    it('handles API error when adding a task gracefully (logs error)', async () => {
+        const store = useTaskStore()
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+        vi.mocked(fetch).mockRejectedValueOnce(new Error('API Down'))
+
+        await store.addTask({ id: 'err', title: 'Error', completed: false, createdAt: 0 })
+
+        expect(consoleSpy).toHaveBeenCalledWith('Failed to add task:', expect.any(Error))
+        consoleSpy.mockRestore()
+    })
 })
