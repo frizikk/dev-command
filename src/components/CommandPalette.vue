@@ -117,7 +117,7 @@ watch(isOpen, async (val) => {
 })
 
 const { Meta_K, Ctrl_K, Escape } = useMagicKeys()
-whenever(() => Meta_K.value || Ctrl_K.value, () => {
+whenever(() => Meta_K?.value || Ctrl_K?.value, () => {
     isOpen.value = !isOpen.value
 })
 

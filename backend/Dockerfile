@@ -1,7 +1,7 @@
-FROM node:20-alpine
+FROM node:20-slim
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-# We use ts-node for simplicity in this sandbox, for production you'd compile to JS
+RUN npm run build
 CMD ["npm", "run", "start"]
