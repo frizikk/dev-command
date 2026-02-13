@@ -1,6 +1,6 @@
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-8 backdrop-blur-xl">
+    <div v-if="isOpen" class="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 backdrop-blur-xl">
       <!-- Background Ambient Glow -->
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px]"></div>
@@ -8,16 +8,16 @@
 
       <audio ref="audioRef" loop></audio>
 
-      <div class="relative w-full max-w-2xl flex flex-col items-center gap-12 text-center">
+      <div class="relative w-full max-w-2xl flex flex-col items-center gap-6 md:gap-12 text-center">
         <!-- Close Button -->
-        <button @click="close" class="absolute -top-16 right-0 text-zinc-500 hover:text-white transition-colors p-2">
+        <button @click="close" class="absolute -top-2 right-0 md:-top-16 text-zinc-500 hover:text-white transition-colors p-2">
             <X :size="32" />
         </button>
 
         <!-- Header -->
         <div class="space-y-4">
           <h2 class="text-zinc-500 uppercase tracking-[0.2em] text-sm font-bold">Focusing on</h2>
-          <h1 class="text-4xl md:text-5xl font-black text-white glow-text leading-tight">
+          <h1 class="text-2xl md:text-4xl lg:text-5xl font-black text-white glow-text leading-tight">
             {{ task?.title }}
           </h1>
         </div>
@@ -25,8 +25,8 @@
         <!-- Timer -->
         <div class="relative group">
           <div class="absolute inset-0 bg-emerald-500/20 rounded-full blur-3xl group-hover:bg-emerald-500/30 transition-all"></div>
-          <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full border-4 border-zinc-800 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
-            <span class="text-6xl md:text-7xl font-mono font-bold text-emerald-500 tabular-nums">
+          <div class="relative w-44 h-44 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full border-4 border-zinc-800 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+            <span class="text-4xl md:text-6xl lg:text-7xl font-mono font-bold text-emerald-500 tabular-nums">
               {{ formattedTime }}
             </span>
             <span class="text-zinc-500 uppercase tracking-widest text-xs mt-2 font-bold">{{ isPaused ? 'Paused' : 'Active' }}</span>
@@ -34,10 +34,10 @@
         </div>
 
         <!-- Controls -->
-        <div class="flex items-center gap-6">
+        <div class="flex flex-wrap items-center justify-center gap-3 md:gap-6">
           <button 
             @click="togglePause"
-            class="w-16 h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-emerald-500 hover:text-emerald-500 transition-all bg-zinc-900/50"
+            class="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-emerald-500 hover:text-emerald-500 transition-all bg-zinc-900/50"
           >
             <Play v-if="isPaused" :size="28" />
             <Pause v-else :size="28" />
@@ -45,29 +45,30 @@
 
           <button 
             @click="completeTask"
-            class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold flex items-center gap-3 transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20"
+            class="px-5 py-3 md:px-8 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold flex items-center gap-2 md:gap-3 transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20 text-sm md:text-base"
           >
-            <CheckCircle :size="24" />
-            Mission Accomplished
+            <CheckCircle :size="20" />
+            <span class="hidden md:inline">Mission Accomplished</span>
+            <span class="md:hidden">Done!</span>
           </button>
 
           <button 
             @click="startFiveMinRule"
-            class="px-4 py-2 border border-orange-500/50 text-orange-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-orange-500/10 transition-all flex items-center gap-2"
+            class="px-3 py-1.5 md:px-4 md:py-2 border border-orange-500/50 text-orange-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-orange-500/10 transition-all flex items-center gap-2"
           >
             <Zap :size="12" /> 5-Min Rule
           </button>
 
           <button 
             @click="handleBreakdown"
-            class="px-4 py-2 border border-emerald-500/50 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all flex items-center gap-2"
+            class="px-3 py-1.5 md:px-4 md:py-2 border border-emerald-500/50 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all flex items-center gap-2"
           >
             <Sparkles :size="12" /> AI Breakdown
           </button>
 
           <button 
             @click="cycleAudio"
-            class="w-16 h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-blue-500/50 hover:text-blue-400 transition-all bg-zinc-900/50 relative group"
+            class="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-blue-500/50 hover:text-blue-400 transition-all bg-zinc-900/50 relative group"
             :class="{ 'border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]': currentAudioMode !== 'none' }"
           >
             <component :is="currentAudioIcon" :size="24" />
@@ -78,7 +79,7 @@
 
           <button 
             @click="resetTimer"
-            class="w-16 h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-red-500/50 hover:text-red-400 transition-all bg-zinc-900/50"
+            class="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-700 hover:border-red-500/50 hover:text-red-400 transition-all bg-zinc-900/50"
           >
             <RotateCcw :size="24" />
           </button>

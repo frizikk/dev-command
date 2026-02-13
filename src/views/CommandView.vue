@@ -1,5 +1,9 @@
 <template>
   <div class="command-view min-h-screen font-mono flex relative overflow-hidden text-sm">
+    <!-- Mobile Sidebar Backdrop -->
+    <Transition name="fade-backdrop">
+      <div v-if="isSidebarOpen" class="fixed inset-0 bg-black/60 z-30 md:hidden" @click="isSidebarOpen = false"></div>
+    </Transition>
     <div class="scanlines fixed inset-0 pointer-events-none z-50"></div>
     <CommandPalette v-model="isPaletteOpen" />
     <FocusMode :is-open="isFocusModeOpen" :task="focusedTask" @close="isFocusModeOpen = false" />
@@ -8,7 +12,7 @@
 
     
     <!-- Sidebar -->
-    <aside class="w-72 border-r border-zinc-800/50 bg-zinc-950/90 flex flex-col z-10 backdrop-blur-md">
+    <aside class="w-72 border-r border-zinc-800/50 bg-zinc-950/95 flex flex-col z-40 backdrop-blur-md fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0" :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'">
       <!-- User / System Identity -->
       <div class="p-6 border-b border-zinc-800/50">
          <div class="flex items-center gap-3">
@@ -96,29 +100,35 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative z-0">
         <!-- Top Bar -->
-      <header class="h-16 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur flex items-center justify-between px-8">
-        <div class="flex items-center gap-4">
-             <div class="text-xs text-zinc-500 uppercase tracking-widest">Current Context</div>
-             <div class="text-zinc-200 font-bold tracking-wide flex items-center gap-2">
+      <header class="h-14 md:h-16 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur flex items-center justify-between px-4 md:px-8">
+        <div class="flex items-center gap-3 md:gap-4">
+             <button @click="isSidebarOpen = !isSidebarOpen" class="md:hidden text-zinc-400 hover:text-emerald-400 transition-colors p-1">
+                 <Menu :size="22" />
+             </button>
+             <div class="text-xs text-zinc-500 uppercase tracking-widest hidden md:block">Current Context</div>
+             <div class="text-zinc-200 font-bold tracking-wide flex items-center gap-2 text-sm md:text-base">
                  <span class="text-emerald-500">></span>
                  {{ activeProjectName || 'GLOBAL_VIEW' }}
              </div>
         </div>
-        <div class="flex items-center gap-6">
-            <div @click="isPaletteOpen = true" class="cursor-pointer flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 hover:border-emerald-500/30 hover:text-emerald-400 transition-all">
+        <div class="flex items-center gap-4 md:gap-6">
+            <div @click="isPaletteOpen = true" class="cursor-pointer hidden md:flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 hover:border-emerald-500/30 hover:text-emerald-400 transition-all">
                 <span class="font-bold">CMD + K</span>
                 <span>TO EXECUTE</span>
             </div>
-             <div class="w-px h-4 bg-zinc-800"></div>
-             <div class="text-emerald-500/50 hover:text-emerald-400 cursor-pointer transition-colors">
+             <button @click="isPaletteOpen = true" class="md:hidden text-zinc-400 hover:text-emerald-400 transition-colors p-1">
+                 <Search :size="20" />
+             </button>
+             <div class="w-px h-4 bg-zinc-800 hidden md:block"></div>
+             <div class="text-emerald-500/50 hover:text-emerald-400 cursor-pointer transition-colors hidden md:block">
                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
              </div>
         </div>
       </header>
       
-      <div class="flex-1 overflow-y-auto p-8">
+      <div class="flex-1 overflow-y-auto p-4 md:p-8">
         <!-- Input Area (Terminal Style) -->
-        <div class="max-w-4xl mx-auto mb-12">
+        <div class="max-w-4xl mx-auto mb-6 md:mb-12">
             <div class="hud-panel p-1 rounded-lg bg-zinc-900 ring-1 ring-zinc-800 ring-offset-2 ring-offset-zinc-950 shadow-2xl transition-shadow focus-within:ring-emerald-500/50 focus-within:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]">
                 <div class="bg-zinc-950 rounded flex items-center px-4 py-4 gap-3">
                     <span class="text-emerald-500 font-bold animate-pulse">></span>
@@ -128,7 +138,7 @@
                     @keydown.enter="handleCommand"
                     type="text" 
                     placeholder="Input command sequence..." 
-                    class="flex-1 bg-transparent outline-none text-lg text-emerald-100 placeholder-zinc-700 font-mono tracking-wide"
+                    class="flex-1 bg-transparent outline-none text-base md:text-lg text-emerald-100 placeholder-zinc-700 font-mono tracking-wide"
                     autofocus
                     />
                      <div class="hidden md:flex gap-2 text-[10px] font-mono text-zinc-600 uppercase">
@@ -170,11 +180,11 @@
                             task.completed ? 'bg-zinc-800' : ''
                         ]"></div>
 
-                    <div class="flex-1 flex items-center gap-4 bg-zinc-900/40 border border-zinc-800/50 p-3 rounded hover:bg-zinc-900 hover:border-zinc-700 transition-all relative group/item">
+                    <div class="flex-1 flex items-center gap-2 md:gap-4 bg-zinc-900/40 border border-zinc-800/50 p-2 md:p-3 rounded hover:bg-zinc-900 hover:border-zinc-700 transition-all relative group/item">
                          <!-- Focus Button (Overlay) -->
                         <button 
                             @click.stop="openFocusMode(task)"
-                            class="absolute right-12 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 bg-emerald-500 text-black text-[10px] font-black px-2 py-1 rounded flex items-center gap-1 transition-all hover:scale-105 z-20"
+                            class="absolute right-12 top-1/2 -translate-y-1/2 opacity-100 md:opacity-0 md:group-hover/item:opacity-100 bg-emerald-500 text-black text-[10px] font-black px-2 py-1 rounded flex items-center gap-1 transition-all hover:scale-105 z-20"
                         >
                             <Zap :size="10" /> FOCUS
                         </button>
@@ -246,7 +256,7 @@ import CommandPalette from '../components/CommandPalette.vue'
 import FocusMode from '../components/FocusMode.vue'
 import LevelSystem from '../components/LevelSystem.vue'
 import FrogPrompt from '../components/FrogPrompt.vue'
-import { Target, Zap } from 'lucide-vue-next'
+import { Target, Zap, Menu, Search } from 'lucide-vue-next'
 import confetti from 'canvas-confetti'
 import { useUserStore } from '../stores/user'
 
@@ -263,6 +273,7 @@ const isPaletteOpen = ref(false)
 const isFocusModeOpen = ref(false)
 const focusedTask = ref<Task | null>(null)
 const isOneThingMode = ref(false)
+const isSidebarOpen = ref(false)
 const isFrogPromptOpen = ref(false)
 const userStore = useUserStore()
 
@@ -475,5 +486,14 @@ function stopEditing(task: any) {
 <style scoped>
 .glow-text-sm {
   text-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
+}
+
+.fade-backdrop-enter-active,
+.fade-backdrop-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-backdrop-enter-from,
+.fade-backdrop-leave-to {
+  opacity: 0;
 }
 </style>

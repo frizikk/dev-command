@@ -1,20 +1,20 @@
 <template>
   <Transition name="slide-up">
-    <div v-if="isOpen" class="fixed inset-x-0 bottom-0 z-[60] p-6 flex justify-center pointer-events-none">
-      <div class="bg-zinc-900 border-2 border-orange-500/50 rounded-xl shadow-[0_0_50px_rgba(249,115,22,0.2)] p-6 max-w-xl w-full pointer-events-auto flex items-center gap-6 relative overflow-hidden group">
+    <div v-if="isOpen" class="fixed inset-x-0 bottom-0 z-[60] p-3 md:p-6 flex justify-center pointer-events-none">
+      <div class="bg-zinc-900 border-2 border-orange-500/50 rounded-xl shadow-[0_0_50px_rgba(249,115,22,0.2)] p-4 md:p-6 max-w-xl w-full pointer-events-auto flex flex-col md:flex-row items-center gap-4 md:gap-6 relative overflow-hidden group">
         <!-- Glow Effect -->
         <div class="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent"></div>
         
-        <div class="w-16 h-16 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-3xl shake-animation">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-2xl md:text-3xl shake-animation shrink-0">
           🐸
         </div>
 
-        <div class="flex-1 space-y-1">
+        <div class="flex-1 space-y-1 text-center md:text-left">
           <h3 class="text-orange-500 font-black uppercase tracking-widest text-xs">Morning Protocol: Eat The Frog</h3>
           <p class="text-zinc-200 font-bold text-lg leading-tight">
             Which task is the most difficult and important today?
           </p>
-          <div class="flex gap-2 pt-2">
+          <div class="flex flex-wrap gap-2 pt-2 justify-center md:justify-start">
             <template v-if="candidateTasks.length">
                 <button 
                   v-for="task in candidateTasks.slice(0, 2)" 
